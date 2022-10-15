@@ -17,7 +17,6 @@ import {
   Keyboard,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableHighlight,
@@ -55,7 +54,7 @@ const defaultStyles = {
   },
   description: {},
   separator: {
-    height: StyleSheet.hairlineWidth,
+    height: 0.5,
     backgroundColor: '#c8c7cc',
   },
   poweredContainer: {
@@ -135,6 +134,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
   };
 
   const [stateText, setStateText] = useState('');
+  const [initialRow,setInitialRow] = useState({})
   const [dataSource, setDataSource] = useState(buildRowsFromResults([]));
   const [listViewDisplayed, setListViewDisplayed] = useState(
     props.listViewDisplayed === 'auto' ? false : props.listViewDisplayed,
@@ -160,6 +160,13 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
     setAddressText: (address) => {
       setStateText(address);
+    },
+    setAddressTextAndQuery: (address) => {
+      _handleChangeText(address);
++     setListViewDisplayed(true); 
+    },
+    pressFirstSuggestion:() => {
+      _onPress(initialRow);
     },
     getAddressText: () => stateText,
     blur: () => inputRef.current.blur(),
@@ -614,6 +621,10 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
   };
 
   const _renderRow = (rowData = {}, index) => {
+    // set initial row to select by default;
+    if(index===1){
+      setInitialRow(rowData);
+    }
     return (
       <ScrollView
         contentContainerStyle={
@@ -822,7 +833,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
               onFocus
                 ? () => {
                     _onFocus();
-                    onFocus(e);
+                    onFocus();
                   }
                 : _onFocus
             }
@@ -830,7 +841,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
               onBlur
                 ? (e) => {
                     _onBlur(e);
-                    onBlur(e);
+                    onBlur();
                   }
                 : _onBlur
             }
@@ -841,7 +852,6 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
           {_renderRightButton()}
         </View>
       )}
-      {props.inbetweenCompo}
       {_getFlatList()}
       {props.children}
     </View>
@@ -861,7 +871,6 @@ GooglePlacesAutocomplete.propTypes = {
   GooglePlacesDetailsQuery: PropTypes.object,
   GooglePlacesSearchQuery: PropTypes.object,
   GoogleReverseGeocodingQuery: PropTypes.object,
-  inbetweenCompo: PropTypes.object,
   isRowScrollable: PropTypes.bool,
   keyboardShouldPersistTaps: PropTypes.oneOf(['never', 'always', 'handled']),
   listEmptyComponent: PropTypes.func,
